@@ -1,0 +1,169 @@
+<html>
+<head>
+<title>Enze's Game</title>
+<script src="https://code.jquery.com/jquery-2.1.0.js"></script>
+	<script src="http://royce.ren/gez/easyBackground-min.js"></script>
+</head>
+<body>
+	<script type="text/javascript">
+	   
+	    $(document).ready(function() {
+		$('body').easyBackground({
+		    wrapNeighbours: true
+		});
+	    });
+	</script>
+<canvas id="myCanvas" width="1320" height="750"></canvas>
+<script>
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+var ballRadius = 8;
+var x = canvas.width/2;
+var y = canvas.height-30;
+var dx = 5;
+var dy = -5;
+var boardHeight = 10;
+var boardWidth = 140;
+var boardX = (canvas.width-boardWidth)/2;
+var rightPressed = false;
+var leftPressed = false;
+var brickRowCount = 15;
+var brickColumnCount = 10;
+var brickWidth = 75;
+var brickHeight = 20;
+var brickPadding = 10;
+var brickOffsetTop = 30;
+var brickOffsetLeft = 30;
+var score = 0;
+
+var bricks = [];
+for(c=0; c<brickColumnCount; c++) {
+    bricks[c] = [];
+    for(r=0; r<brickRowCount; r++) {
+        bricks[c][r] = { x: 1, y: 1, status: 1 };
+    }
+}
+document.addEventListener("keyup", keyUpHandler, false);
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("mousemove", mouseMoveHandler, false);
+
+function keyDownHandler(e) {
+    if(e.keyCode == 39) {
+        rightPressed = true;
+    }
+    else if(e.keyCode == 37) {
+        leftPressed = true;
+    }
+}
+function keyUpHandler(e) {
+    if(e.keyCode == 39) {
+        rightPressed = false;
+    }
+    else if(e.keyCode == 37) {
+        leftPressed = false;
+    }
+}
+function collisionDetection() {
+    for(c=0; c<brickColumnCount; c++) {
+        for(r=0; r<brickRowCount; r++) {
+            var b = bricks[c][r];
+            if(b.status == 1) {
+                if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+                    dy = -dy;
+                    b.status = 0;
+                    score++;
+                    if(score == 110) {
+                        alert("YOU WIN!");
+                        document.location.reload();
+                    }
+                }
+            }
+        }
+    }
+}
+
+function mouseMoveHandler(e) {
+    var superX = e.clientX + canvas.offsetLeft;
+    if(superX > 0 && superX < canvas.width) {
+        boardX = superX - boardWidth/2;
+    }
+}
+function drawboard() {
+    ctx.beginPath();
+    ctx.rect(boardX, canvas.height-boardHeight, boardWidth, boardHeight);
+    ctx.fillStyle = "lightcyan";
+    ctx.fill();
+    ctx.closePath();
+}
+
+function drawBall() {
+    ctx.fillStyle = "Gold";
+    ctx.beginPath();
+    ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+    ctx.fill();
+    ctx.closePath();
+}
+function drawBricks() {
+    for(c=0; c<brickColumnCount; c++) {
+        for(r=0; r<brickRowCount; r++) {
+            if(bricks[c][r].status == 1) {
+                var brickX = (r*(brickWidth+brickPadding))+brickOffsetLeft;
+                var brickY = (c*(brickHeight+brickPadding))+brickOffsetTop;
+                bricks[c][r].x = brickX;
+                bricks[c][r].y = brickY;
+                ctx.beginPath();
+                ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                ctx.fillStyle = "aqua";
+                ctx.fill();
+                ctx.closePath();
+ ctx.shadowBlur = 50; 
+  ctx.shadowColor = "mediumspringgreen"; 
+
+            }
+        }
+    }
+}
+function drawScore() {
+    ctx.font = "28px Arial";
+    ctx.fillStyle = "White";
+    ctx.fillText("Score: "+score, 8, 25);
+}
+var loseString="GAME OVER"
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBricks();
+    drawBall();
+    drawboard();
+    drawScore();
+    collisionDetection();
+    
+    if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+        dx = -dx;
+    }
+    if(y + dy < ballRadius) {
+        dy = -dy;
+    }
+    else if(y + dy > canvas.height-ballRadius) {
+        if(x > boardX && x < boardX + boardWidth) {
+            dy = -dy;
+        }
+        else {
+            alert(loseString);
+            document.location.reload();
+        }
+    }
+    
+    if(rightPressed && boardX < canvas.width-boardWidth) {
+        boardX += 7;
+    }
+    else if(leftPressed && boardX > 0) {
+        boardX -= 7;
+    }
+    x += dx;
+    y += dy;
+}
+
+setInterval(draw, 20);
+</script>
+</body>
+</html>
